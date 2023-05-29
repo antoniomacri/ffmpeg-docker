@@ -7,7 +7,7 @@ CMD         ["--help"]
 ENTRYPOINT  ["ffmpeg"]
 WORKDIR     /tmp/ffmpeg
 
-ENV SOFTWARE_VERSION="4.2.9"
+ENV SOFTWARE_VERSION="5.1"
 ENV SOFTWARE_VERSION_URL="http://ffmpeg.org/releases/ffmpeg-${SOFTWARE_VERSION}.tar.bz2"
 ENV BIN="/usr/bin"
 
@@ -93,20 +93,23 @@ RUN DIR=$(mktemp -d) && cd ${DIR} && \
   export PYTHONPATH=$SRC/vmaf/python/src:$PYTHONPATH && \
   rm -rf ${DIR}
 
-RUN cd "build-dir" && cd ffmpeg* && PATH="$BIN:$PATH" && ./configure --bindir="$BIN" \
-  # --disable-debug \
-  # --disable-doc \ 
-  # --disable-ffplay \ 
-  # --enable-librtmp \ 
-  # --enable-postproc \ 
+RUN cd "build-dir" && cd ffmpeg* && PATH="$BIN:$PATH" && ./configure --help && ./configure --bindir="$BIN" \
+  # Licensing options:
   --enable-gpl  \
   --enable-nonfree \
   --enable-version3 \
+  # Configuration options:
   --enable-shared \
+  # Program options:
+  --disable-ffplay \ 
+  # Documentation options:
+  --disable-doc \ 
+  # Component options:
+  --enable-postproc \ 
+  # Individual component options:
   --disable-filter=resample  \
-  --disable-stripping  \
-  --enable-avisynth  \
-  --enable-avresample  \
+  # External library support:
+  # --enable-avisynth \
   # --enable-chromaprint  \
   --enable-frei0r  \
   --enable-gnutls  \
@@ -119,7 +122,6 @@ RUN cd "build-dir" && cd ffmpeg* && PATH="$BIN:$PATH" && ./configure --bindir="$
   --enable-libcdio  \
   # --enable-libcodec2  \
   --enable-libdc1394  \
-  --enable-libdrm  \
   # --enable-libflite  \
   --enable-libfontconfig  \
   --enable-libfreetype  \
@@ -129,13 +131,13 @@ RUN cd "build-dir" && cd ffmpeg* && PATH="$BIN:$PATH" && ./configure --bindir="$
   # --enable-libiec61883  \
   --enable-libjack  \
   --enable-libmp3lame  \
-  # --enable-libmysofa  \
   --enable-libopenjpeg  \
   --enable-libopenmpt  \
   --enable-libopus  \
   --enable-libpulse  \
   --enable-librsvg  \
   --enable-librubberband  \
+  --enable-librtmp \ 
   # --enable-libshine  \
   --enable-libsnappy  \
   --enable-libsoxr  \
@@ -144,23 +146,28 @@ RUN cd "build-dir" && cd ffmpeg* && PATH="$BIN:$PATH" && ./configure --bindir="$
   --enable-libtheora  \
   # --enable-libtwolame  \
   --enable-libvidstab  \
+  --enable-libvmaf \
   --enable-libvorbis  \
   --enable-libvpx  \
-  --enable-libwavpack  \
   --enable-libwebp  \
   --enable-libx264  \
   --enable-libx265  \
-  --enable-libxml2  \
   --enable-libxvid  \
+  --enable-libxml2  \
   --enable-libzmq  \
   # --enable-libzvbi  \
   --enable-lv2  \
-  # --enable-omx  \
+  # --enable-libmysofa  \
   --enable-openal  \
   --enable-opencl  \
   --enable-opengl  \
   # --enable-sdl2  \
-  --enable-libvmaf \
+  # The following libraries provide various hardware acceleration features:
+  --enable-libdrm  \
+  # --enable-omx  \
+  # Developer options (useful when working on FFmpeg itself):
+  --disable-debug \
+  --disable-stripping \
   && \
 make -j4 && \
 make install && \
