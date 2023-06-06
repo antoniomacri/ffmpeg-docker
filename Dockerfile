@@ -11,42 +11,35 @@ ENV SOFTWARE_VERSION="5.1"
 ENV SOFTWARE_VERSION_URL="http://ffmpeg.org/releases/ffmpeg-${SOFTWARE_VERSION}.tar.bz2"
 ENV BIN="/usr/bin"
 
-RUN cd && \
-apk update && \
-apk upgrade && \
-apk add \
+RUN cd \
+ && apk update \
+ && apk upgrade \
+ && apk add --no-cache --virtual .build-dependencies \
+  build-base \
+  bzip2 \
+  coreutils \
+  gnutls \
+  nasm \
+  tar \
+  git \
+  xxd \
+  py3-pip \
+  python3-dev \
+  libvpx-dev \
+  libwebp-dev \
+  libssh2 \
+  opus-dev \
+  rtmpdump-dev \
+  x264-dev \
+  x265-dev \
+  yasm-dev \
   freetype-dev \
   gnutls-dev \
   lame-dev \
   libass-dev \
   libogg-dev \
   libtheora-dev \
-  libvorbis-dev \ 
-  libvpx-dev \
-  libwebp-dev \ 
-  libssh2 \
-  opus-dev \
-  rtmpdump-dev \
-  x264-dev \
-  x265-dev \
-  yasm-dev && \
-apk add --no-cache --virtual \ 
-  .build-dependencies \ 
-  build-base \ 
-  bzip2 \ 
-  coreutils \ 
-  gnutls \ 
-  nasm \ 
-  tar \ 
-  x264 \
-  git \
-  xxd \
-  py3-pip \
-  python3-dev
-
-RUN mkdir "build-dir" && cd "build-dir" && wget "${SOFTWARE_VERSION_URL}" && tar xjvf "ffmpeg-${SOFTWARE_VERSION}.tar.bz2"
-
-RUN cd && apk update && apk upgrade && apk add \
+  libvorbis-dev \
   frei0r-plugins-dev \
   ladspa-dev \
   aom-dev \
@@ -84,94 +77,143 @@ RUN cd && apk update && apk upgrade && apk add \
   # omxplayer
   libcdio-paranoia-dev
 
-RUN DIR=$(mktemp -d) && cd ${DIR} && \
-  git clone https://github.com/Netflix/vmaf.git && \
-  cd vmaf && git checkout v2.3.1 && \
-  pip3 install meson Cython numpy ninja \
-  make && \
-  make install && \
-  export PYTHONPATH=$SRC/vmaf/python/src:$PYTHONPATH && \
-  rm -rf ${DIR}
+RUN DIR=$(mktemp -d) \
+ && cd ${DIR} \
+ && git clone https://github.com/Netflix/vmaf.git \
+ && cd vmaf \
+ && git checkout v2.3.1 \
+ && pip3 install meson Cython numpy ninja \
+ && make \
+ && make install \
+ && rm -rf ${DIR}
 
-RUN cd "build-dir" && cd ffmpeg* && PATH="$BIN:$PATH" && ./configure --help && ./configure --bindir="$BIN" \
+RUN DIR=$(mktemp -d) \
+ && cd ${DIR} \
+ && wget "${SOFTWARE_VERSION_URL}" \
+ && tar xjvf "ffmpeg-${SOFTWARE_VERSION}.tar.bz2" \
+ && cd ffmpeg* \
+ && PATH="$BIN:$PATH" \
+ && ./configure --help \
+ && ./configure --bindir="$BIN" \
   # Licensing options:
-  --enable-gpl  \
+  --enable-gpl \
   --enable-nonfree \
   --enable-version3 \
   # Configuration options:
   --enable-shared \
   # Program options:
-  --disable-ffplay \ 
+  --disable-ffplay \
   # Documentation options:
-  --disable-doc \ 
+  --disable-doc \
   # Component options:
-  --enable-postproc \ 
+  --enable-postproc \
   # Individual component options:
-  --disable-filter=resample  \
+  --disable-filter=resample \
   # External library support:
   # --enable-avisynth \
-  # --enable-chromaprint  \
-  --enable-frei0r  \
-  --enable-gnutls  \
-  --enable-ladspa  \
-  --enable-libaom  \
-  --enable-libass  \
-  --enable-libbluray  \
-  --enable-libbs2b  \
-  --enable-libcaca  \
-  --enable-libcdio  \
-  # --enable-libcodec2  \
-  --enable-libdc1394  \
-  # --enable-libflite  \
-  --enable-libfontconfig  \
-  --enable-libfreetype  \
-  --enable-libfribidi  \
-  # --enable-libgme  \
-  --enable-libgsm  \
-  # --enable-libiec61883  \
-  --enable-libjack  \
-  --enable-libmp3lame  \
-  --enable-libopenjpeg  \
-  --enable-libopenmpt  \
-  --enable-libopus  \
-  --enable-libpulse  \
-  --enable-librsvg  \
-  --enable-librubberband  \
-  --enable-librtmp \ 
-  # --enable-libshine  \
-  --enable-libsnappy  \
-  --enable-libsoxr  \
-  --enable-libspeex  \
-  --enable-libssh  \
-  --enable-libtheora  \
-  # --enable-libtwolame  \
-  --enable-libvidstab  \
+  # --enable-chromaprint \
+  --enable-frei0r \
+  --enable-gnutls \
+  --enable-ladspa \
+  --enable-libaom \
+  --enable-libass \
+  --enable-libbluray \
+  --enable-libbs2b \
+  --enable-libcaca \
+  --enable-libcdio \
+  # --enable-libcodec2 \
+  --enable-libdc1394 \
+  # --enable-libflite \
+  --enable-libfontconfig \
+  --enable-libfreetype \
+  --enable-libfribidi \
+  # --enable-libgme \
+  --enable-libgsm \
+  # --enable-libiec61883 \
+  --enable-libjack \
+  --enable-libmp3lame \
+  --enable-libopenjpeg \
+  --enable-libopenmpt \
+  --enable-libopus \
+  --enable-libpulse \
+  --enable-librsvg \
+  --enable-librubberband \
+  --enable-librtmp \
+  # --enable-libshine \
+  --enable-libsnappy \
+  --enable-libsoxr \
+  --enable-libspeex \
+  --enable-libssh \
+  --enable-libtheora \
+  # --enable-libtwolame \
+  --enable-libvidstab \
   --enable-libvmaf \
-  --enable-libvorbis  \
-  --enable-libvpx  \
-  --enable-libwebp  \
-  --enable-libx264  \
-  --enable-libx265  \
-  --enable-libxvid  \
-  --enable-libxml2  \
-  --enable-libzmq  \
-  # --enable-libzvbi  \
-  --enable-lv2  \
-  # --enable-libmysofa  \
-  --enable-openal  \
-  --enable-opencl  \
-  --enable-opengl  \
-  # --enable-sdl2  \
+  --enable-libvorbis \
+  --enable-libvpx \
+  --enable-libwebp \
+  --enable-libx264 \
+  --enable-libx265 \
+  --enable-libxvid \
+  --enable-libxml2 \
+  --enable-libzmq \
+  # --enable-libzvbi \
+  --enable-lv2 \
+  # --enable-libmysofa \
+  --enable-openal \
+  --enable-opencl \
+  --enable-opengl \
+  # --enable-sdl2 \
   # The following libraries provide various hardware acceleration features:
-  --enable-libdrm  \
-  # --enable-omx  \
+  --enable-libdrm \
+  # --enable-omx \
   # Developer options (useful when working on FFmpeg itself):
   --disable-debug \
   --disable-stripping \
-  && \
-make -j4 && \
-make install && \
-make distclean && \
-rm -rf "${DIR}"  && \
-apk del --purge .build-dependencies && \
-rm -rf /var/cache/apk/* 
+ && make -j4 \
+ && make install \
+ && make distclean \
+ && rm -rf ${DIR}
+
+RUN cd \
+ && apk del --purge .build-dependencies \
+ && rm -rf /var/cache/apk/*
+
+RUN cd \
+ && apk update \
+ && apk upgrade \
+ && apk add \
+  freetype \
+  librtmp \
+  lame-libs \
+  libass \
+  libtheora \
+  libvpx \
+  x264-libs \
+  x265-libs \
+  aom-libs \
+  lilv \
+  libbluray \
+  libbs2b \
+  libcaca \
+  libdc1394 \
+  libdrm \
+  gsm \
+  openjpeg \
+  libopenmpt \
+  libpulse \
+  jack \
+  librsvg \
+  rubberband-libs \
+  snappy \
+  soxr \
+  libssh \
+  speex \
+  vidstab \
+  # wavpack-dev \
+  xvidcore \
+  zeromq \
+  # libxml2-dev \
+  openal-soft-libs \
+  opencl \
+  mesa-gl \
+  libcdio-paranoia
